@@ -209,14 +209,47 @@ struct ModelTests {
         let model = Model(state: .running(remainingTime: 1, selectedTime: 100))
         model.tick()
 
-        test(expectedState: .finished(woundTime: 100), against: model)
+        test(
+            expectedState: .finished(woundTime: 100),
+            against: model
+        )
     }
 
-    private func test(expectedState: State, against model: Model) {
+    private func test(
+        expectedState: State,
+        against model: Model,
+        fileID: String = #fileID,
+        filePath: String = #filePath,
+        line: Int = #line,
+        column: Int = #column
+    ) {
+        let sourceLocation = SourceLocation(
+            fileID: fileID,
+            filePath: filePath,
+            line: line,
+            column: column
+        )
+
+        test(
+            expectedState: expectedState,
+            against: model,
+            sourceLocation: sourceLocation
+        )
+    }
+
+    private func test(
+        expectedState: State,
+        against model: Model,
+        sourceLocation: SourceLocation
+    ) {
         if case expectedState = model.state {
-            #expect(true)
+            #expect(true, sourceLocation: sourceLocation)
         } else {
-            #expect(false, "Got \(model.state), expected \(expectedState)")
+            #expect(
+                Bool(false),
+                "Got \(model.state), expected \(expectedState)",
+                sourceLocation: sourceLocation
+            )
         }
     }
 }
