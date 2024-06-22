@@ -121,9 +121,8 @@ struct InitializationTests {
         }
     }
 
-    @Test("Should have .intro when the end date is older than x days")
-
-    func expiredState() async throws {
+    @Test("Should have .paused when the pausedTime is set", .tags(.pausing))
+    func pausedState() async throws {
         let savedState = InitializationState(
             storeDate: storeDateFresh,
             woundTime: woundTime,

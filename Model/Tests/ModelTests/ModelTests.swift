@@ -14,6 +14,7 @@ typealias TickTestArguments = (initialState: State, ticks: Int, expectedState: S
 struct ModelTests {
     @Test(
         "When the user starts winding, we always have the winding state",
+        .tags(.winding),
         arguments: [
             WindingTestArguments(
                 .intro,
@@ -58,7 +59,10 @@ struct ModelTests {
         }
     }
 
-    @Test("When the user keeps winding, the wound value gets updated")
+    @Test(
+        "When the user keeps winding, the wound value gets updated",
+        .tags(.winding)
+    )
     func keepWinding() async throws {
         let expected: State = .winding(selectedTime: 100)
 
@@ -74,6 +78,7 @@ struct ModelTests {
 
     @Test(
         "Start only works from finished or winding, puts it in the .running state",
+        .tags(.running),
         arguments: [
             StartTestArguments(.intro, false),
             StartTestArguments(.paused(remainingTime: 123, selectedTime: 150), false),
@@ -101,6 +106,7 @@ struct ModelTests {
 
     @Test(
         "Restart only works from finished and puts it in the .running state",
+        .tags(.running),
         arguments: [
             DefaultModelTestArguments(.finished(woundTime: 300), .running(remainingTime: 300, selectedTime: 300)),
             DefaultModelTestArguments(.intro, .intro),
@@ -124,6 +130,7 @@ struct ModelTests {
 
     @Test(
         "Pause only works from the .running state and puts it in the .paused state",
+        .tags(.pausing),
         arguments: [
             DefaultModelTestArguments(.running(remainingTime: 123, selectedTime: 300), .paused(remainingTime: 123, selectedTime: 300)),
             DefaultModelTestArguments(.intro, .intro),
@@ -142,6 +149,7 @@ struct ModelTests {
 
     @Test(
         "Unpause only works from .paused",
+        .tags(.pausing),
         arguments: [
             DefaultModelTestArguments(.paused(remainingTime: 123, selectedTime: 300), .running(remainingTime: 123, selectedTime: 300)),
             DefaultModelTestArguments(.running(remainingTime: 123, selectedTime: 300), .running(remainingTime: 123, selectedTime: 300)),
@@ -160,6 +168,7 @@ struct ModelTests {
 
     @Test(
         "Tick should decrement the amount of seconds left with 1",
+        .tags(.running),
         arguments: [
             TickTestArguments(
                 .running(remainingTime: 100, selectedTime: 100),
@@ -192,7 +201,10 @@ struct ModelTests {
         test(expectedState: arguments.expectedState, against: model)
     }
 
-    @Test("When the the last second ticks away, we should get the .finished state")
+    @Test(
+        "When the the last second ticks away, we should get the .finished state",
+        .tags(.finishing)
+    )
     func finished() async throws {
         let model = Model(state: .running(remainingTime: 1, selectedTime: 100))
         model.tick()
