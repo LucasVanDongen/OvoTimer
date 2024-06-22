@@ -10,22 +10,20 @@ import Testing
 
 @testable import Model
 
+// 10 minutes ago
+private let storeDateFresh = Date().addingTimeInterval(-600)
+// a day ago
+private let storeDateStale = Date().addingTimeInterval(-60 * 60 * 24)
+// 400 seconds into the future
+private let nearFutureDate = Date().addingTimeInterval(400)
+
+private let woundTime: Ticks = 500
+private let pausedTime: Ticks = 123
+private let currentDate = Date()
+private let nearPastDate = Date().addingTimeInterval(-400)
+
 @Suite
 struct InitializationTests {
-    private let woundTime: Ticks = 500
-    private let pausedTime: Ticks = 123
-    private let currentDate: Date
-    private let nearFutureDate: Date
-    private let nearPastDate: Date
-    private let longPastDate: Date
-
-    init() {
-        currentDate = Date()
-        nearFutureDate = currentDate.addingTimeInterval(400)
-        nearPastDate = currentDate.addingTimeInterval(-400)
-        longPastDate = currentDate.addingTimeInterval(-20 * 24 * 60 * 60)
-    }
-
     @Test("Should have .intro state when loading empty state")
     func noSavedState() async throws {
         let savedState = InitializationState()
@@ -43,20 +41,35 @@ struct InitializationTests {
     }
 
     @Test(
-        "Should have .intro state when loading inconsistent state",
-        arguments: [
-            InitializationState(endDate: nil, woundTime: nil, pausedTime: nil),
-            InitializationState(endDate: nil, woundTime: 200, pausedTime: nil),
-            InitializationState(endDate: nil, woundTime: nil, pausedTime: 200),
-            InitializationState(endDate: Date(), woundTime: nil, pausedTime: 100),
-            InitializationState(endDate: Date(), woundTime: 200, pausedTime: 100)
+        "Should have .intro state when loading any kind of state stored over 8 hours ago",
+        .tags(.introducing),
+        arguments: [       
+            InitializationState(
+                storeDate: storeDateStale,
+                endDate: nearFutureDate,
+                woundTime: woundTime
+            ),
+            InitializationState(
+                storeDate: storeDateStale,
+                endDate: nearFutureDate,
+                woundTime: woundTime
+            ),
+            InitializationState(
+                storeDate: storeDateStale,
+                endDate: nearPastDate,
+                woundTime: woundTime
+            ),
+            InitializationState(
+                storeDate: storeDateStale,
+                woundTime: woundTime,
+                pausedAt: pausedTime
+            )
         ]
     )
-    func inconsistentState(argument: InitializationState) async throws {
-        let savedState = InitializationState()
+    func expiredSavedState(savedState: InitializationState) async throws {
         let state = State(
             initializationState: savedState,
-            currentDate: Date()
+            currentDate: currentDate
         )
 
         switch state {
@@ -70,9 +83,11 @@ struct InitializationTests {
     @Test("Should have .running when the end date is after now")
     func runningState() async throws {
         let savedState = InitializationState(
+            storeDate: storeDateFresh,
             endDate: nearFutureDate,
             woundTime: woundTime
         )
+        
         let state = State(
             initializationState: savedState,
             currentDate: currentDate
@@ -89,6 +104,7 @@ struct InitializationTests {
     @Test("Should have .finished when the end date is before now but not older than x days")
     func finishedState() async throws {
         let savedState = InitializationState(
+            storeDate: storeDateFresh,
             endDate: nearPastDate,
             woundTime: woundTime
         )
@@ -109,8 +125,9 @@ struct InitializationTests {
 
     func expiredState() async throws {
         let savedState = InitializationState(
-            endDate: longPastDate,
-            woundTime: woundTime
+            storeDate: storeDateFresh,
+            woundTime: woundTime,
+            pausedAt: pausedTime
         )
         let state = State(
             initializationState: savedState,
@@ -146,5 +163,18 @@ struct InitializationTests {
         default:
             #expect(false, "\(state)")
         }
+    }
+
+    @Test(
+        "Store date is stale after 8 days",
+        arguments: [
+            (storeDateStale, true),
+            (storeDateFresh, false)
+        ]
+    )
+    func isStoredState(with storeDate: Date, expectedToBeStale: Bool) {
+        #expect(
+            State.is(storeDate: storeDate, staleComparedTo: currentDate) == expectedToBeStale
+        )
     }
 }
