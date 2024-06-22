@@ -55,7 +55,10 @@ struct ModelTests {
         if case arguments.expectedState = model.state {
             #expect(true)
         } else {
-            #expect(false, "Got \(model.state), expected \(arguments.expectedState)")
+            #expect(
+                Bool(false),
+                "Got \(model.state), expected \(arguments.expectedState)"
+            )
         }
     }
 
@@ -72,7 +75,10 @@ struct ModelTests {
         if case expected = model.state {
             #expect(true)
         } else {
-            #expect(false, "Got \(model.state), expected \(expected)")
+            #expect(
+                Bool(false),
+                "Got \(model.state), expected \(expected)"
+            )
         }
     }
 
@@ -124,7 +130,10 @@ struct ModelTests {
         if case arguments.expectedState = model.state {
             #expect(true)
         } else {
-            #expect(false, "Got \(model.state), not expected")
+            #expect(
+                Bool(false),
+                "Got \(model.state), not expected"
+            )
         }
     }
 
@@ -144,7 +153,10 @@ struct ModelTests {
 
         model.pause()
 
-        test(expectedState: arguments.expectedState, against: model)
+        test(
+            expectedState: arguments.expectedState,
+            against: model
+        )
     }
 
     @Test(
@@ -163,7 +175,10 @@ struct ModelTests {
 
         model.unpause()
 
-        test(expectedState: arguments.expectedState, against: model)
+        test(
+            expectedState: arguments.expectedState,
+            against: model
+        )
     }
 
     @Test(
@@ -198,7 +213,10 @@ struct ModelTests {
             model.tick()
         }
 
-        test(expectedState: arguments.expectedState, against: model)
+        test(
+            expectedState: arguments.expectedState,
+            against: model
+        )
     }
 
     @Test(
